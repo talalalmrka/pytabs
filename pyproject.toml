@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pytabs"
+version = "0.1.0"
+description = "A Python Textual application"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "textual",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+    "watchfiles",
+]
+
+[project.scripts]
+pytabs = "pytabs.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pytabs*"]
+
+[tool.setuptools.package-data]
+pytabs = ["*.tcss"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]

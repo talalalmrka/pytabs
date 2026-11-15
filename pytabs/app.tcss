@@ -1,0 +1,67 @@
+Screen {
+    background: $background;
+    layout: vertical;
+}
+
+.status-container {
+    width: 100%;
+    height: auto;
+    padding: 1;
+    background: $surface;
+}
+
+
+.status-grid {
+    width: 100%;
+    height: auto;
+    grid-size: 2 1;
+    grid-gutter: 2;
+    grid-rows: auto;
+    align: left top;
+}
+
+.status-card {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    background: $panel;
+    padding: 1 1;
+    border: round outer $panel;
+}
+
+.status-card-title {
+    text-style: bold;
+    margin: 0 0;
+}
+
+.status-card-indicator {
+    margin: 0 0;
+}
+
+.status-on {
+    background: #166534;
+    color: #22c55e;
+    border: #166534;
+}
+
+.status-off {
+    background: #991b1b;
+    border: #991b1b;
+    color: #ef4444;
+}
+
+.status-pending {
+    background: #9a3412;
+    border: #9a3412;
+    color: #f97316;
+}
+.status-btn {
+    width: 100%;
+}
+
+.main-tabs {
+    width: 100%;
+    height: 1fr;
+    padding: 1;
+    background: $surface;
+}
