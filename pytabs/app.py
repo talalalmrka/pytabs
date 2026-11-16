@@ -100,7 +100,7 @@ class TamppServer(App):
                         flat=True,
                     )
 
-            with TabbedContent(initial="home", classes="main-tabs"):
+            with TabbedContent(initial="php", classes="main-tabs"):
                 yield LogTab(
                     log_files={
                         "PHP": APP_CONFIG.php.log_file,
@@ -108,7 +108,7 @@ class TamppServer(App):
                     },
                     id="log",
                 )
-                yield HomeTab()
+                # yield HomeTab()
                 yield PhpTab()
                 yield MariadbTab()
                 yield SettingsTab()

@@ -3,12 +3,16 @@ import webbrowser
 from pathlib import Path
 
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical
+from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.screen import ModalScreen
 from textual.widgets import Button, Label, Static, TabPane, TextArea
 
 from pytabs.config import APP_CONFIG
 from pytabs.services.platform import find_php
+from pytabs.widgets.divider import Divider
+from pytabs.widgets.fg_button import FgButton
+from pytabs.widgets.status_item import StatusItem
+from pytabs.screens.file_editor import FileEditorScreen
 
 
 class IniEditorScreen(ModalScreen):
@@ -91,9 +95,83 @@ class PhpTab(TabPane):
         self.php_info_url = f"{self.base_url}/dashboard/phpinfo.php"
         self.phpmyadmin_url = f"{self.base_url}/dashboard/phpmyadmin"
 
+    def get_status_items(self) -> list[StatusItem]:
+        return [
+            StatusItem(
+                id="php-host",
+                label="Host",
+                content=self.config.host,
+            ),
+            StatusItem(
+                id="php-port",
+                label="Port",
+                content=self.config.port,
+            ),
+            StatusItem(
+                id="php-executable",
+                label="Executable",
+                content=self.executable,
+                onclick=True,
+            ),
+            StatusItem(
+                id="php-document-root",
+                label="Document Root",
+                content=self.document_root,
+                onclick=True,
+            ),
+            StatusItem(
+                id="php-dashboard-path",
+                label="Dashboard",
+                content=self.dashboard_path,
+                onclick=True,
+            ),
+            StatusItem(
+                id="php-temp",
+                label="Temporary Directory",
+                content=self.temp_path,
+                onclick=True,
+            ),
+            StatusItem(
+                id="php-ini",
+                label="Configuration (php.ini)",
+                content=self.ini_path,
+                onclick=True,
+            ),
+            StatusItem(
+                id="php-router",
+                label="Router",
+                content=self.router_path,
+                onclick=True,
+            ),
+            StatusItem(
+                id="php-log",
+                label="Log File",
+                content=self.log_path,
+                onclick=True,
+            ),
+            StatusItem(
+                id="php-pid",
+                label="PID File",
+                content=self.pid_path,
+                onclick=True,
+            ),
+        ]
+
     def compose(self) -> ComposeResult:
-        with Vertical(id="php-settings"):
+        with VerticalScroll(id="php-settings"):
             yield Label("PHP Server", classes="section-title")
+            for item in self.get_status_items():
+                yield Button(
+                    f"{item.label}:\n{item.content}",
+                    id=f"btn-{item.id}",
+                    flat=False,
+                    classes="status-item-btn",
+                )
+
+            for index, item in enumerate(self.get_status_items()):
+                yield item
+                if index < len(self.get_status_items()) - 1:
+                    yield Divider()
 
             yield Static(
                 f"Host: {self.config.host}",
@@ -115,7 +193,7 @@ class PhpTab(TabPane):
             yield Label("PHP Executable", classes="section-title")
             yield Button(
                 f"Open: {self.executable}",
-                id="php-executable",
+                id="php-executable-button",
                 classes="config-button",
             )
 
@@ -129,13 +207,13 @@ class PhpTab(TabPane):
 
             yield Button(
                 f"Dashboard: {self.dashboard_path}",
-                id="php-dashboard-path",
+                id="php-dashboard-path-button",
                 classes="config-button",
             )
 
             yield Button(
                 f"Temporary Directory: {self.temp_path}",
-                id="php-temp",
+                id="php-temp-button",
                 classes="config-button",
             )
 
@@ -143,14 +221,14 @@ class PhpTab(TabPane):
 
             yield Button(
                 f"Edit php.ini: {self.ini_path}",
-                id="php-ini",
+                id="php-ini-button",
                 variant="success",
                 classes="config-button",
             )
 
             yield Button(
                 f"Router: {self.router_path}",
-                id="php-router",
+                id="php-router-button",
                 classes="config-button",
             )
 
@@ -158,13 +236,13 @@ class PhpTab(TabPane):
 
             yield Button(
                 f"Log File: {self.log_path}",
-                id="php-log",
+                id="php-log-button",
                 classes="config-button",
             )
 
             yield Button(
                 f"PID File: {self.pid_path}",
-                id="php-pid",
+                id="php-pid-button",
                 classes="config-button",
             )
 
@@ -192,7 +270,7 @@ class PhpTab(TabPane):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         button_id = event.button.id
 
-        if button_id == "php-ini":
+        if button_id == "php-ini-button":
             self.app.push_screen(
                 IniEditorScreen(self.ini_path),
                 callback=self.on_ini_editor_closed,
@@ -253,3 +331,52 @@ class PhpTab(TabPane):
 
             if callable(log_event):
                 log_event("php", "php.ini configuration updated")
+
+    def on_status_item_clicked(self, event: StatusItem.Clicked) -> None:
+        item_id = event.item_id
+        match item_id:
+            case "php-ini":
+                self.app.push_screen(
+                    IniEditorScreen(self.ini_path),
+                    callback=self.on_ini_editor_closed,
+                )
+            case "php-executable":
+                self.open_path(Path(self.executable))
+            case "php-document-root":
+                self.open_path(self.document_root)
+            case "php-dashboard-path":
+                self.open_path(self.dashboard_path)
+            case "php-temp":
+                self.open_path(self.temp_path)
+            case "php-router":
+                self.open_path(self.router_path)
+            case "php-log":
+                self.open_path(self.log_path)
+            case "php-pid":
+                self.open_path(self.pid_path)
+            case _:
+                self.notify(
+                    f"Unknown status item clicked: {item_id}",
+                    title="Status item clicked",
+                    severity="warning",
+                )
+
+    def on_status_item_clickedd(self, event: StatusItem.Clicked) -> None:
+        paths = {
+            "php-executable": Path(self.executable),
+            "php-document-root": self.document_root,
+            "php-dashboard-path": self.dashboard_path,
+            "php-temp": self.temp_path,
+            "php-router": self.router_path,
+            "php-log": self.log_path,
+            "php-pid": self.pid_path,
+        }
+        if event.item_id == "php-ini":
+            self.app.push_screen(
+                IniEditorScreen(self.ini_path),
+                callback=self.on_ini_editor_closed,
+            )
+            return
+        path = paths.get(event.item_id)
+        if path is not None:
+            self.open_path(path)
